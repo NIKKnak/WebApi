@@ -19,7 +19,7 @@ namespace WebApi.Models
         {
             //узнать строку подключения для sql
             // "Server=.;Database=ProductStoreTrusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
-            optionsBuilder.UseSqlServer("");
+            optionsBuilder.UseSqlServer("Server=.;Database=ProductStoreTrusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -30,8 +30,10 @@ namespace WebApi.Models
 
                 entity.ToTable("Products");
 
-                entity.HasKey(x => x.Id).HasName("ProductID");
-                entity.HasIndex(x => x.Name).IsUnique();
+                entity.HasKey(x => x.Id)
+                .HasName("ProductID");
+                entity.HasIndex(x => x.Name)
+                .IsUnique();
 
                 entity.Property(e => e.Name)
                .HasColumnName("ProductName")
@@ -90,101 +92,3 @@ namespace WebApi.Models
     }
 }
 
-
-// dotnet ef migrations add InitialCreate --context ProductsContext dotnet ef database update
-
-// dotnet tool install --global dotnet-ef
-
-/*
- [ApiController]
- [Route("[controller]")]
- public class ProductController : ControllerBase
- {
-     [HttpGet("getProduct")]
-     public IActionResult GetProducts()
-     {
-         try
-         {
-             using (var context = new StoreContext())
-             {
-                 var products = context.Products.Select(x => new Product()
-                 {
-                     Id = x.Id,
-                     Name = x.Name,
-                     Description = x.Description
-                 });
-                 return Ok(products);
-             }
-         }
-         catch
-         {
-             return StatusCode(500);
-         }            
-     }
- }
-
-
-
-*/
-
-/*
-[HttpPost(template: "addproduct")]
-        public ActionResult AddProduct(string name, string description, int groupId)
-        {
-            try
-            {
-                using (var ctx = new ProductsContext())
-                {
-                    if (ctx.Procucts.Count(x => x.Name.ToLower() == name.ToLower()) > 0)
-                    {
-                        return StatusCode(409);
-                    }
-                    else
-                    {
-                        ctx.Procucts.Add(new Product { Name = name, Description = description, ProductGroupId = groupId });
-                        ctx.SaveChanges();
-                    }
-                }
-
-                return Ok();
-            }
-            catch
-            {
-                return StatusCode(500);
-            }
-        }
-*/
-
-
-/*
-[HttpPost("putProduct")]
-public IActionResult PutProducts([FromQuery] string name,string description, int groupId, int price )
-{
-    try
-    {
-        using (var context = new StoreContext())
-        {
-            if (!context.Products.Any(x => x.Name.ToLower().Equals(name)))
-            {
-                context.Add(new Product()
-                {
-                    Name = name,
-                    Description = description,
-                    Price = price,
-                    GroupID = groupId
-                });
-                context.SaveChanges();
-                return Ok();
-            }
-            else
-            {
-                return StatusCode(409);
-            }                        
-        }
-    }
-    catch
-    {
-        return StatusCode(500);
-    }
-}
-*/
