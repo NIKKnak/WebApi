@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using WebApi.Abstraction;
 using WebApi.Models;
+using WebApi.Models.DTO;
 
 namespace WebApi.Controllers
 {
@@ -8,139 +10,124 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class ProductController : ControllerBase
     {
-        private readonly StoreContext context;
 
-        public ProductController(StoreContext context)
+        private readonly IProductRepository _productRepository;
+
+
+
+        public ProductController(IProductRepository productRepository)
         {
-            this.context = context;
+            _productRepository = productRepository;
         }
 
-        [HttpGet("getProducts")]
+        [HttpGet("get_products")]
         public IActionResult GetProducts()
         {
-            try
-            {
-                var products = context.Products.Select(x => new ProductModel()
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Description = x.Description,
-                    Price = x.Price
-                }).ToList();
-
-                return Ok(products);
-            }
-            catch
-            {
-                return StatusCode(500);
-            }
+            var products = _productRepository.GetProducts();
+            return Ok(products);
         }
 
-        [HttpPost("putProduct")]
-        public IActionResult PutProduct([FromQuery] string name, string description, int groupId, int price)
+        [HttpGet("get_groups")]
+        public IActionResult GetGroups()
         {
-            try
-            {
-                if (!context.Products.Any(x => x.Name.ToLower().Equals(name)))
+            var groups = _productRepository.GetGroups();
+            return Ok(groups);
+        }
+
+        [HttpPost("add_product")]
+        public IActionResult AddProduct([FromBody] ProbuctDto productDto)
+        {
+            var result = _productRepository.AddProduct(productDto);
+            return Ok(result);
+        }
+
+        [HttpPost("add_group")]
+        public IActionResult AddGroup([FromBody] GroupDto groupDto)
+        {
+            var result = _productRepository.AddGroup(groupDto);
+            return Ok(result);
+        }
+        /*
+                [HttpDelete("deleteProduct/{productId}")]
+                public IActionResult DeleteProduct(int productId)
                 {
-                    context.Add(new Product()
+                    try
                     {
-                        Name = name,
-                        Description = description,
-                        Price = price,
-                    });
+                        var product = context.Products.Find(productId);
 
-                    context.SaveChanges();
-                    return Ok();
-                }
-                else
-                {
-                    return StatusCode(409);
-                }
-            }
-            catch
-            {
-                return StatusCode(500);
-            }
-        }
-
-        [HttpDelete("deleteProduct/{productId}")]
-        public IActionResult DeleteProduct(int productId)
-        {
-            try
-            {
-                var product = context.Products.Find(productId);
-
-                if (product != null)
-                {
-                    context.Products.Remove(product);
-                    context.SaveChanges();
-                    return Ok();
-                }
-                else
-                {
-                    return NotFound();
-                }
-            }
-            catch
-            {
-                return StatusCode(500);
-            }
-        }
-
-        [HttpDelete("deleteGroup/{groupId}")]
-        public IActionResult DeleteGroup(int groupId)
-        {
-            try
-            {
-                var group = context.Groups.Find(groupId);
-
-                if (group != null)
-                {
-                    var productsInGroup = context.Products.Where(x => x.GroupId == groupId).ToList();
-
-                    if (productsInGroup.Any())
-                    {
-                        context.Products.RemoveRange(productsInGroup);
+                        if (product != null)
+                        {
+                            context.Products.Remove(product);
+                            context.SaveChanges();
+                            return Ok();
+                        }
+                        else
+                        {
+                            return NotFound();
+                        }
                     }
-
-                    context.Groups.Remove(group);
-                    context.SaveChanges();
-                    return Ok();
+                    catch
+                    {
+                        return StatusCode(500);
+                    }
                 }
-                else
+        */
+        /*
+                [HttpDelete("deleteGroup/{groupId}")]
+                public IActionResult DeleteGroup(int groupId)
                 {
-                    return NotFound();
-                }
-            }
-            catch
-            {
-                return StatusCode(500);
-            }
-        }
+                    try
+                    {
+                        var group = context.Groups.Find(groupId);
 
-        [HttpPut("updateProductPrice/{productId}")]
-        public IActionResult UpdateProductPrice(int productId, [FromQuery] int newPrice)
-        {
-            try
-            {
-                var product = context.Products.Find(productId);
+                        if (group != null)
+                        {
+                            var productsInGroup = context.Products.Where(x => x.GroupId == groupId).ToList();
 
-                if (product != null)
-                {
-                    product.Price = newPrice;
-                    context.SaveChanges();
-                    return Ok();
+                            if (productsInGroup.Any())
+                            {
+                                context.Products.RemoveRange(productsInGroup);
+                            }
+
+                            context.Groups.Remove(group);
+                            context.SaveChanges();
+                            return Ok();
+                        }
+                        else
+                        {
+                            return NotFound();
+                        }
+                    }
+                    catch
+                    {
+                        return StatusCode(500);
+                    }
                 }
-                else
+
+                [HttpPut("updateProductPrice/{productId}")]
+                public IActionResult UpdateProductPrice(int productId, [FromQuery] int newPrice)
                 {
-                    return NotFound();
+                    try
+                    {
+                        var product = context.Products.Find(productId);
+
+                        if (product != null)
+                        {
+                            product.Price = newPrice;
+                            context.SaveChanges();
+                            return Ok();
+                        }
+                        else
+                        {
+                            return NotFound();
+                        }
+                    }
+                    catch
+                    {
+                        return StatusCode(500);
+                    }
                 }
-            }
-            catch
-            {
-                return StatusCode(500);
-            }
-        }
+            
+        */
     }
 }
