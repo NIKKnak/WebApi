@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using Microsoft.AspNetCore.Mvc;
+using System.Formats.Asn1;
+using System.Globalization;
 using System.Linq;
 using WebApi.Abstraction;
 using WebApi.Models;
@@ -47,87 +51,43 @@ namespace WebApi.Controllers
             var result = _productRepository.AddGroup(groupDto);
             return Ok(result);
         }
-        /*
-                [HttpDelete("deleteProduct/{productId}")]
-                public IActionResult DeleteProduct(int productId)
-                {
-                    try
-                    {
-                        var product = context.Products.Find(productId);
+        //DZ-2
+        [HttpGet("export_products_csv")]
+        public IActionResult ExportProductsCsv()
+        {
+            var products = _productRepository.GetProducts();
 
-                        if (product != null)
-                        {
-                            context.Products.Remove(product);
-                            context.SaveChanges();
-                            return Ok();
-                        }
-                        else
-                        {
-                            return NotFound();
-                        }
-                    }
-                    catch
-                    {
-                        return StatusCode(500);
-                    }
-                }
-        */
-        /*
-                [HttpDelete("deleteGroup/{groupId}")]
-                public IActionResult DeleteGroup(int groupId)
-                {
-                    try
-                    {
-                        var group = context.Groups.Find(groupId);
+            using (var memoryStream = new MemoryStream())
+            using (var writer = new StreamWriter(memoryStream))
+            using (var csv = new CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
+            {
+                csv.WriteRecords(products);
+                writer.Flush();
+                memoryStream.Position = 0;
 
-                        if (group != null)
-                        {
-                            var productsInGroup = context.Products.Where(x => x.GroupId == groupId).ToList();
+                return File(memoryStream, "text/csv", "products.csv");
+            }
+        }
+        //DZ-2
+        [HttpGet("cache_statistics_csv")]
+        public IActionResult GetCacheStatisticsCsv()
+        {
+            var cacheStatistics = _productRepository.GetCacheStatistics();
 
-                            if (productsInGroup.Any())
-                            {
-                                context.Products.RemoveRange(productsInGroup);
-                            }
+            var memoryStream = new MemoryStream();
+            using (var writer = new StreamWriter(memoryStream))
+            using (var csv = new CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
+            {
+                csv.WriteRecord(cacheStatistics);
+                writer.Flush();
+                memoryStream.Position = 0;
 
-                            context.Groups.Remove(group);
-                            context.SaveChanges();
-                            return Ok();
-                        }
-                        else
-                        {
-                            return NotFound();
-                        }
-                    }
-                    catch
-                    {
-                        return StatusCode(500);
-                    }
-                }
+                return File(memoryStream, "text/csv", "cache_statistics.csv");
+            }
 
-                [HttpPut("updateProductPrice/{productId}")]
-                public IActionResult UpdateProductPrice(int productId, [FromQuery] int newPrice)
-                {
-                    try
-                    {
-                        var product = context.Products.Find(productId);
 
-                        if (product != null)
-                        {
-                            product.Price = newPrice;
-                            context.SaveChanges();
-                            return Ok();
-                        }
-                        else
-                        {
-                            return NotFound();
-                        }
-                    }
-                    catch
-                    {
-                        return StatusCode(500);
-                    }
-                }
-            
-        */
+
+
+        }
     }
 }
